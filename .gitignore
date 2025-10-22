@@ -1,3 +1,4 @@
 workdir/
 .venv/
+transform/__pycache__/
 transform/transform_scripts/__pycache__/
