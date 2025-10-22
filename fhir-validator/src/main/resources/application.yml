@@ -1,0 +1,41 @@
+# HTTP port for this Spring Boot service
+server:
+  port: 8080
+
+spring:
+  application:
+    # Logical name for logs/actuator/etc.
+    name: fhir-r5-validator-api
+
+app:
+  fhir:
+    # Toggle for using Snowstorm via HAPI’s RemoteTerminologyServiceValidationSupport.
+    # We keep this FALSE because we’re validating SNOMED through the custom module
+    # (SnomedSnowstormValidator) that calls Snowstorm directly.
+    snowstorm:
+      enabled: false
+
+    # Optional fallback remote terminology server for non-SNOMED code systems.
+    # Uses env var APP_FHIR_TXBASEURL if present, otherwise defaults to tx.fhir.org R5.
+    # Example override at runtime:
+    #   APP_FHIR_TXBASEURL=https://tx.fhir.org/r4
+    txBaseUrl: ${APP_FHIR_TXBASEURL:https://tx.fhir.org/r5}
+
+    # IG package(s) bundled in the application classpath that the validator will load.
+    # Place the .tgz under src/main/resources/ig/ and list here (comma-separated if multiple).
+    igClasspathPackages: "classpath:/ig/SKtestIG-4.0.0.tgz"
+
+  # Settings used by the custom SnowstormClient (not HAPI’s remote terminology support).
+  snowstorm:
+    # Base URL of Snowstorm’s FHIR API inside Docker (service name + port).
+    # Can be overridden via APP_FHIR_SNOWSTORM_BASEURL.
+    baseUrl: ${APP_FHIR_SNOWSTORM_BASEURL:http://snowstorm:8080/fhir}
+    # Default SNOMED CT branch to query/validate against (e.g., MAIN or MAIN/SNOMEDCT-XX).
+    branch: MAIN
+
+logging:
+  level:
+    # Enable DEBUG logs for our custom validators and Snowstorm client to see calls/decisions.
+    com.example.validator.validation: DEBUG
+    com.example.validator.terminology: DEBUG
+

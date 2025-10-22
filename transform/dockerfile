@@ -1,0 +1,28 @@
+FROM python:3.11-bookworm
+
+# Java 17 para PySpark 3.5.x
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-17-jre-headless \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Dependencias Python
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Copiamos la API y TU código de transformación
+COPY main.py /app/main.py
+COPY transform_scripts /app/transform_scripts
+
+# Que Python encuentre tus módulos
+ENV PYTHONPATH=/app/transform
+
+# Carpeta de trabajo (para csv/bundles/outcomes)
+RUN mkdir -p /app/workdir
+RUN test -f /app/transform_scripts/transform.py || (echo "Falta /app/transform_scripts/transform.py en la imagen" && ls -la /app/transform_scripts && exit 1)
+
+ENV WORKDIR=/app/workdir
+
+EXPOSE 8090
+CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8090"]

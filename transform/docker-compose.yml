@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  orchestrator-api:
+    build: ./transform
+    image: local/transform:latest
+    environment:
+      VALIDATOR_BASE_URL: "http://host.docker.internal:8085"
+      # Usa spark-submit (instalado por pyspark) o python, como prefieras:
+      # Si tu script está montado en /app/transform/transform.py:
+      CONVERTER_CMD: >-
+        spark-submit --master local[*] /app/transform/transform.py
+        --input {in} --outdir {out} --sep ';'
+        --absolute-base https://fhir.example.org
+      # Alternativa (si tu script inicia Spark internamente): 
+      # CONVERTER_CMD: "python /app/transform/transform.py --input {in} --outdir {out}"
+      PYTHONPATH: "/app/transform"
+    volumes:
+      # Monta tu carpeta con el script real:
+      - ./transform:/app/transform
+      # Carpeta de trabajo para artefactos:
+      - ./workdir:/app/workdir
+    ports:
+      - "8090:8090"

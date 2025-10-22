@@ -1,0 +1,173 @@
+version: "3.9"
+
+services:
+  # --- Infra para Snowstorm ---
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - node.name=snowstorm
+      - cluster.name=snowstorm-cluster
+      - ES_JAVA_OPTS=-Xms4g -Xmx4g
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    networks: [sknet]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    ports:
+      - 127.0.0.1:9200:9200
+
+  snowstorm:
+    image: snomedinternational/snowstorm:latest
+    container_name: snowstorm
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    entrypoint: >
+      java -Xms2g -Xmx4g
+      --add-opens java.base/java.lang=ALL-UNNAMED
+      --add-opens=java.base/java.util=ALL-UNNAMED
+      -cp @/app/jib-classpath-file
+      org.snomed.snowstorm.SnowstormApplication
+      --elasticsearch.urls=http://elasticsearch:9200
+    networks:
+      sknet:
+        aliases: [snowstorm]
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/fhir/metadata | grep -q 'CapabilityStatement'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  validator:
+    build:
+      context: ./fhir-validator        
+      dockerfile: Dockerfile
+    image: local/fhir-r5-validator-api:latest
+    container_name: validator
+    depends_on:
+      snowstorm:
+        condition: service_healthy
+    environment:
+      # Snowstorm FHIR (R4) para SNOMED
+      APP_FHIR_SNOWSTORM_BASEURL: "http://snowstorm:8080/fhir"
+      # Fallback terminológico (no SNOMED)
+      APP_FHIR_TXBASEURL: "https://tx.fhir.org/r5"
+      # IGs incluidos en el jar (ajusta si cambia la ruta/paquete)
+      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.0.0.tgz"
+    networks:
+      sknet:
+        aliases: [validator]
+    ports:
+      - "8085:8080" 
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  orchestrator-api:
+    build: ./transform
+    image: local/transform:latest
+    environment:
+      VALIDATOR_BASE_URL: "http://validator:8080"
+      # Usa spark-submit (instalado por pyspark) o python, como prefieras:
+      # Si tu script está montado en /app/transform/transform.py:
+      CONVERTER_CMD: "spark-submit --master local[*] /app/transform/transform_scripts/transform.py --input {in} --outdir {out}"
+      # Alternativa (si tu script inicia Spark internamente): 
+      # CONVERTER_CMD: "python /app/transform/transform.py --input {in} --outdir {out}"
+      HAPI_BASE_URL: "http://hapi:8080/fhir"
+      JOB_TAG_SYSTEM: "http://localhost:8090/job"
+    volumes:
+      # Monta tu carpeta con el script real:
+      - ./transform:/app/transform
+      # Carpeta de trabajo para artefactos:
+      - ./workdir:/app/workdir
+    networks: [sknet]
+    ports:
+      - "8090:8090"
+  db:
+    image: postgres:16
+    container_name: hapi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - hapi_pgdata:/var/lib/postgresql/data
+    networks: [sknet]
+    ports:
+      # Exponlo si quieres acceso desde tu host psql; opcional:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d hapi -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  hapi:
+    image: hapiproject/hapi:v8.4.0-2-tomcat
+    container_name: hapi-fhir
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      sknet:
+        aliases: [hapi]
+    ports:
+      - "8082:8080"
+    environment:
+      # --- Fuerza perfil y DATASOURCE (evita H2) ---
+      SPRING_PROFILES_ACTIVE: "postgres"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/hapi"
+      SPRING_DATASOURCE_USERNAME: "admin"
+      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
+
+      # Fuerza el dialecto de Postgres (corta cualquier intento de usar H2)
+      SPRING_JPA_DATABASE_PLATFORM: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+      # (opcional redundante pero útil si hay defaults internos)
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+
+
+      # --- FHIR en R5 (sin dudas) ---
+      HAPI_FHIR_FHIR_VERSION: "R5"
+      HAPI_FHIR_SERVER_ADDRESS: "http://localhost:8082/fhir"
+      HAPI_FHIR_IG_RUNTIME_UPLOAD_ENABLED: "true"
+
+      # --- Repositorio “relajado” (opcional) ---
+      HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_WRITE: "false"
+      HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_DELETE: "false"
+      HAPI_FHIR_ALLOW_PLACEHOLDERS: "true"
+
+
+
+       
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/fhir/metadata | grep -q 'CapabilityStatement'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+networks:
+  sknet:
+
+volumes:
+  elastic:
+  hapi_pgdata:

@@ -1,0 +1,80 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - node.name=snowstorm
+      - cluster.name=snowstorm-cluster
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    networks: [sknet]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    ports:
+      - 127.0.0.1:9200:9200
+
+  snowstorm:
+    image: snomedinternational/snowstorm:latest
+    container_name: snowstorm
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    entrypoint: >
+      java -Xms2g -Xmx4g
+      --add-opens java.base/java.lang=ALL-UNNAMED
+      --add-opens=java.base/java.util=ALL-UNNAMED
+      -cp @/app/jib-classpath-file
+      org.snomed.snowstorm.SnowstormApplication
+      --elasticsearch.urls=http://elasticsearch:9200
+    networks:
+      sknet:
+        aliases: [snowstorm]
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/fhir/metadata | grep -q 'CapabilityStatement'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  validator:
+    build:
+      context: ./fhir-validator  
+      dockerfile: Dockerfile
+    image: local/fhir-r5-validator-api:latest
+    container_name: validator
+    depends_on:
+      snowstorm:
+        condition: service_healthy
+    environment:
+      APP_FHIR_SNOWSTORM_BASEURL: "http://snowstorm:8080/fhir"
+      APP_FHIR_TXBASEURL: "https://tx.fhir.org/r5"
+      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.0.0.tgz"
+    networks:
+      sknet:
+        aliases: [validator]
+    ports:
+      - "8085:8080" 
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+networks:
+  sknet:
+
+volumes:
+  elastic:
+
