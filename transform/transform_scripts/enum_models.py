@@ -114,7 +114,7 @@ class BleedingReason(ConceptEnum):
     OTHER = ("Other", {"code": "other", "display": "Bleeding Reason Other", "system": "http://testSK.org/CodeSystem/hemorrhagic-stroke-bleeding-reason-cs"})
 
 class AtrialFibrillationOrFlutter(ConceptEnum):
-    KNOWN_AF = ("Known AF", {"code": "410515005", "display": "Known present (qualifier value)", "system": "http://snomed.info/sct"})
+    KNOWN_AF = ("Known AF", {"code": "410515003", "display": "Known present (qualifier value)", "system": "http://snomed.info/sct"})
     NO_AF = ("No AF", {"code": "410516002", "display": "Known absent (qualifier value)", "system": "http://snomed.info/sct"})
     NOT_SCREENED = ("Not Screened", {"code": "261665006", "display": "Unknown (qualifier value)", "system": "http://snomed.info/sct"})
     DETECTED = ("Detected", {"code": "410515003", "display": "Known present (qualifier value)", "system": "http://snomed.info/sct"})
