@@ -1,2 +1,3 @@
-./workdir
-./.venv
+./workdir/
+./.venv/
+./transform_scripts/__pycache__/
