@@ -12,8 +12,8 @@ def mapping(
     lookup: Dict[Any, Any],
     target_col: Optional[str] = None,
     drop_unmapped: bool = False,
-    default: Optional[Any] = None,   # valor por defecto cuando no hay match o falta la source
-    strict: bool = False             # si True, lanza error si falta la source
+    default: Optional[Any] = None,  
+    strict: bool = False            
 ) -> DataFrame:
     """
     Maps df[source_col] -> df[target_col] using lookup (dict).
@@ -28,7 +28,7 @@ def mapping(
     # 1) If source column is missing
     if source_col not in df.columns:
         if strict:
-            raise ValueError(f"mapping(): columna fuente '{source_col}' no existe en el DataFrame")
+            raise ValueError(f"mapping(): source column '{source_col}' does not exist in the DataFrame")
         fill = F.lit(default) if default is not None else F.lit(None)
         return df.withColumn(tgt, fill)
 
@@ -39,6 +39,15 @@ def mapping(
     for k, v in lookup.items():
         flat.extend([F.lit(str(k)), F.lit(v)])
     mapping_expr = F.create_map(*flat)
+
+    # Print for debugging the raw values of source_col
+    df.select(source_col).distinct().show()
+    # print the mapping dictionary
+    print("Mapping dictionary:")
+    for k, v in lookup.items():
+        print(f"  {k} -> {v}")
+    
+    
 
     # 3) Secure lookup
     key = F.col(source_col).cast("string")
@@ -150,7 +159,7 @@ def remove_values(
     Replaces with null the values in `column` that fall within any
     of the ranges in `invalid_ranges`.
     """
-    # Construir condición para valores inválidos
+
     invalid_cond = None
     for r in invalid_ranges:
         cond = col(column).between(r.start, r.stop - 1)

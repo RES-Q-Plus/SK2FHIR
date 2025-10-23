@@ -98,7 +98,7 @@ def imaging_types(dataframe):
 def reperfusion_timestamp(dataframe):
     return dataframe.withColumn(
         shm.reperfusion_timestamp,
-        when(col(shm.mtici_score) == '000', None)
+        when(col(shm.mtici_score) == MTiciScore.ZERO.id, None)
         .otherwise(col(shm.reperfusion_timestamp)))
 
 

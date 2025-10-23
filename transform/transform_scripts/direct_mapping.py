@@ -64,8 +64,8 @@ imaging_done_map = {
 }
 
 before_onset_anticoagulant_map = {
-    '01': BeforeOnsetMedication.WARFARIN.id,
-    '06': BeforeOnsetMedication.ANTICOAGULANT.id,
+    '1': BeforeOnsetMedication.WARFARIN.id,
+    '6': BeforeOnsetMedication.ANTICOAGULANT.id,
     '98': BeforeOnsetMedication.ANTICOAGULANT.id,
 }
 
@@ -149,11 +149,11 @@ discharge_facility_department_map = {
 }
 
 mtici_score_map = {
-    '000': MTiciScore.ZERO.id,
-    '010': MTiciScore.ONE.id,
-    '02a': MTiciScore.TWO_A.id,
-    '02b': MTiciScore.TWO_B.id,
-    '030': MTiciScore.THREE.id,
+    '00': MTiciScore.ZERO.id,
+    '10': MTiciScore.ONE.id,
+    '2a': MTiciScore.TWO_A.id,
+    '2b': MTiciScore.TWO_B.id,
+    '30': MTiciScore.THREE.id,
 }
 
 smoker_map = {

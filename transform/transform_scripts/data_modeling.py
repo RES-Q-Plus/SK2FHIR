@@ -589,12 +589,12 @@ def build_observation_mtici_score(raw: dict, patient_ref : str, encounter_ref : 
 
     coding_category = Coding(
         system = "http://terminology.hl7.org/CodeSystem/observation-category",
-        code = "survey",
-        display = "Survey"
+        code = "procedure",
+        display = "Procedure"
     )
     code_category = CodeableConcept(coding=[coding_category])
 
-    mtici_score = MTiciScore.by_id(str(raw.get("mtici_score")))
+    mtici_score = MTiciScore.by_id(str(raw.get("mtici_score_id")))
     coding_value_mtici = Coding(
         system = mtici_score.system,
         code = mtici_score.code,
@@ -603,12 +603,11 @@ def build_observation_mtici_score(raw: dict, patient_ref : str, encounter_ref : 
     code_value_mtici = CodeableConcept(coding=[coding_value_mtici])
     return Observation(
         status="final",
-        
         subject=Reference(reference=patient_ref),
-        meta={"profile": ["http://testSK.org/StructureDefinition/timing-metric-observation-profile"]},
+        meta={"profile": ["http://testSK.org/StructureDefinition/specific-finding-observation-profile"]},
         code=code_mtici,
         valueCodeableConcept=code_value_mtici,
-        category=code_category.coding,
+        category=[code_category],
         encounter=Reference(reference=encounter_ref)
     )
 
@@ -1171,7 +1170,9 @@ def transform_to_fhir(raw: dict) -> Bundle:
         entries.append({"fullUrl": get_uuid(), "resource": nihss_adm, "request": BundleEntryRequest(method="POST", url="Observation")})
 
     # 8. Observation: Mtici Score (if exists)
-    if not safe_isna(raw.get("mtici_score")):
+    print("MTICI SCORE:")
+    print(raw.get("mtici_score_id"))
+    if not safe_isna(raw.get("mtici_score_id")):
         observation_mtici_score = build_observation_mtici_score(raw, patient_ref, encounter_ref)
         entries.append({"fullUrl": get_uuid(), "resource": observation_mtici_score, "request": BundleEntryRequest(method="POST", url="Observation")})
 
