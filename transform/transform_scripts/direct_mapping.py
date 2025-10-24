@@ -150,10 +150,15 @@ discharge_facility_department_map = {
 
 mtici_score_map = {
     '00': MTiciScore.ZERO.id,
+    '000': MTiciScore.ZERO.id,
     '10': MTiciScore.ONE.id,
+    '010': MTiciScore.ONE.id,
     '2a': MTiciScore.TWO_A.id,
+    '02a': MTiciScore.TWO_A.id,
     '2b': MTiciScore.TWO_B.id,
+    '02b': MTiciScore.TWO_B.id,
     '30': MTiciScore.THREE.id,
+    '030': MTiciScore.THREE.id,
 }
 
 smoker_map = {
