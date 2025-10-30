@@ -103,7 +103,7 @@ class StrokeType(ConceptEnum):
 
 class StrokeEtiology(ConceptEnum):
         CARDIOEMBOLYSM = ("Cardioembolism", {"code": "413758000", "display": "Cardioembolic stroke (disorder)", "system": "http://snomed.info/sct"})
-        ATHEROSCLEROSIS = ("Atherosclerosis", {"code": "atherosclerosis", "display": "Stroke Etiology Atherosclerosis", "system": "http://snomed.info/sct"})
+        ATHEROSCLEROSIS = ("Atherosclerosis", {"code": "atherosclerosis", "display": "Stroke Etiology Atherosclerosis", "system": "http://testSK.org/CodeSystem/stroke-etiology-cs"})
         LACUNAR = ("Lacunar", {"code": "230698000", "display": "Lacunar infarction (disorder)", "system": "http://snomed.info/sct"})
         CRYPTOGENIC_STROKE = ("Cryptogenic Stroke", {"code": "16891111000119104", "display": "Cryptogenic stroke (disorder)", "system": "http://snomed.info/sct"})
         OTHER= ("Other", {"code": "other", "display": "Stroke Etiology Other", "system": "http://testSK.org/CodeSystem/stroke-etiology-cs"})
