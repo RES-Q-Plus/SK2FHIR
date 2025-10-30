@@ -1,5 +1,5 @@
 from enum_models import (
-    BeforeOnsetMedication,
+    Medications,
     ProcedureNotDoneReason,
     Sex,
         ArrivalMode,
@@ -64,9 +64,9 @@ imaging_done_map = {
 }
 
 before_onset_anticoagulant_map = {
-    '1': BeforeOnsetMedication.WARFARIN.id,
-    '6': BeforeOnsetMedication.ANTICOAGULANT.id,
-    '98': BeforeOnsetMedication.ANTICOAGULANT.id,
+    '1': Medications.WARFARIN.id,
+    '6': Medications.ANTICOAGULANT.id,
+    '98': Medications.ANTICOAGULANT.id,
 }
 
 
