@@ -103,14 +103,14 @@ class StrokeType(ConceptEnum):
 
 class StrokeEtiology(ConceptEnum):
         CARDIOEMBOLYSM = ("Cardioembolism", {"code": "413758000", "display": "Cardioembolic stroke (disorder)", "system": "http://snomed.info/sct"})
-        ATHEROSCLEROSIS = ("Atherosclerosis", {"code": "atherosclerosis", "display": "Stroke Etiology Atherosclerosis", "system": "http://testSK.org/CodeSystem/stroke-etiology-cs"})
-        LACUNAR = ("Lacunar", {"code": "lacunar", "display": "Stroke Etiology Lacunar", "system": "http://testSK.org/CodeSystem/stroke-etiology-cs"})
+        ATHEROSCLEROSIS = ("Atherosclerosis", {"code": "atherosclerosis", "display": "Stroke Etiology Atherosclerosis", "system": "http://snomed.info/sct"})
+        LACUNAR = ("Lacunar", {"code": "230698000", "display": "Lacunar infarction (disorder)", "system": "http://snomed.info/sct"})
         CRYPTOGENIC_STROKE = ("Cryptogenic Stroke", {"code": "16891111000119104", "display": "Cryptogenic stroke (disorder)", "system": "http://snomed.info/sct"})
         OTHER= ("Other", {"code": "other", "display": "Stroke Etiology Other", "system": "http://testSK.org/CodeSystem/stroke-etiology-cs"})
 
 class BleedingReason(ConceptEnum):
-    ANEURYSM = ("Aneurysm", {"code": "aneurysm", "display": "Bleeding Reason Aneurysm", "system": "http://testSK.org/CodeSystem/hemorrhagic-stroke-bleeding-reason-cs"})
-    MALFORMATION = ("Malformation", {"code": "malformation", "display": "Bleeding Reason Malformation", "system": "http://testSK.org/CodeSystem/hemorrhagic-stroke-bleeding-reason-cs"})
+    ANEURYSM = ("Aneurysm", {"code": "128609009", "display": "Intracranial aneurysm (disorder)", "system": "http://snomed.info/sct"})
+    MALFORMATION = ("Malformation", {"code": "703221003", "display": "Congenital intracranial vascular malformation (disorder)", "system": "http://snomed.info/sct"})
     OTHER = ("Other", {"code": "other", "display": "Bleeding Reason Other", "system": "http://testSK.org/CodeSystem/hemorrhagic-stroke-bleeding-reason-cs"})
 
 class AtrialFibrillationOrFlutter(ConceptEnum):
@@ -119,17 +119,21 @@ class AtrialFibrillationOrFlutter(ConceptEnum):
     NOT_SCREENED = ("Not Screened", {"code": "261665006", "display": "Unknown (qualifier value)", "system": "http://snomed.info/sct"})
     DETECTED = ("Detected", {"code": "410515003", "display": "Known present (qualifier value)", "system": "http://snomed.info/sct"})
 
-class BeforeOnsetMedication(ConceptEnum):
-    ANTIHYPERTENSIVE = ("Antihypertensive", {"code": "308116003", "display": "Antihypertensive therapy (procedure)", "system": "http://snomed.info/sct"})
-    ANTICOAGULANT = ("Anticoagulant", {"code": "182764009", "display": "Anticoagulant therapy (procedure)", "system": "http://snomed.info/sct"})
+class Medications(ConceptEnum):
+    
+    ANTIHYPERTENSIVE = ("Antihypertensive", {"code": "372586001", "display": "Hypotensive agent (substance)", "system": "http://snomed.info/sct"})
+    ANTICOAGULANT = ("Anticoagulant", {"code": "372862008", "display": "Anticoagulant (substance)", "system": "http://snomed.info/sct"})
     CONTRACEPTION = ("Contraception", {"code": "1237404009", "display": "Uses hormone method of contraception (finding)", "system": "http://snomed.info/sct"})
-    STATIN = ("Statin", {"code": "315053001", "display": "Administration of prophylactic statin (procedure)", "system": "http://snomed.info/sct"})
-    WARFARIN = ("Warfarin", {"code": "722045009", "display": "Warfarin therapy (procedure)", "system": "http://snomed.info/sct"})
-    OTHER_ANTICOAGULANT = ("Other Anticoagulant", {"code": "other-anticoagulant", "display": "Other Anticoagulant", "system": "http://testSK.org/CodeSystem/medication-statement-cs"})
-    ANTIDIABETIC = ("Antidiabetic", {"code": "antidiabetic", "display": "Any Antidiabetic", "system": "http://testSK.org/CodeSystem/medication-statement-cs"})
-    ANTIPLATELET = ("Antiplatelet", {"code": "antiplatelet", "display": "Any Antiplatelet", "system": "http://testSK.org/CodeSystem/medication-statement-cs"})
-    ASA = ("ASA", {"code": "asa", "display": "Aspirin", "system": "http://testSK.org/CodeSystem/medication-statement-cs"})
-    CLOPIDOGREL = ("Clopidogrel", {"code": "clopidogrel", "display": "Clopidogrel", "system": "http://testSK.org/CodeSystem/medication-statement-cs"})
+    STATIN = ("Statin", {"code": "372912004", "display": "Substance with 3-hydroxy-3-methylglutaryl-coenzyme A reductase inhibitor mechanism of action (substance)", "system": "http://snomed.info/sct"})
+    WARFARIN = ("Warfarin", {"code": "372756006", "display": "Warfarin (substance)", "system": "http://snomed.info/sct"})
+    ASA = ("ASA", {"code": "387458008", "display": "Aspirin (substance)", "system": "http://snomed.info/sct"})
+    CLOPIDOGREL = ("Clopidogrel", {"code": "386952008", "display": "Clopidogrel (substance)", "system": "http://snomed.info/sct"})
+    HEPARIN = ("Heparin", {"code": "372877000", "display": "Heparin (substance)", "system": "http://snomed.info/sct"})
+    OTHER_ANTICOAGULANT = ("Other Anticoagulant", {"code": "other-anticoagulant", "display": "Other Anticoagulant", "system": "http://testSK.org/CodeSystem/medication-cs"})
+    ANTIDIABETIC = ("Antidiabetic", {"code": "antidiabetic", "display": "Any Antidiabetic", "system": "http://testSK.org/CodeSystem/medication-cs"})
+    ANTIPLATELET = ("Antiplatelet", {"code": "antiplatelet", "display": "Any Antiplatelet", "system": "http://testSK.org/CodeSystem/medication-cs"})
+    OTHER = ("Other", {"code": "other", "display": "Other Medication", "system": "http://testSK.org/CodeSystem/medication-cs"})
+    OTHER_ANTIPLATELET = ("Other Antiplatelet", {"code": "other-antiplatelet", "display": "Other Antiplatelet", "system": "http://testSK.org/CodeSystem/medication-cs"})
 
 
 class ProcedureNotDoneReason(ConceptEnum):
@@ -219,6 +223,7 @@ class DischargeMedication(ConceptEnum):
     CLOPIDOGREL = ("Clopidogrel", {"code": "clopidogrel", "display": "Clopidogrel", "system": "http://testSK.org/CodeSystem/discharge-medication-cs"})
     CONTRACEPTION = ("Contraception", {"code": "contraception", "display": "Contraception", "system": "http://testSK.org/CodeSystem/discharge-medication-cs"})
     OTHER = ("Other", {"code": "other", "display": "Other", "system": "http://testSK.org/CodeSystem/discharge-medication-cs"})
+
 
 class VitalSigns(ConceptEnum):
     SYSTOLIC = ("Systolic", {"code": "271649006", "display": "Systolic blood pressure (observable entity)", "system": "http://snomed.info/sct"})

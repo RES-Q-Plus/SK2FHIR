@@ -87,17 +87,19 @@ def get_uuid() -> str:
 
 def get_stroke_etiology(raw: dict):
     # No error if none applies; choose first True
-    if raw.get("stroke_etiology_cardioembolism") is True:
-        return StrokeEtiology.by_id("Cardioembolism")
-    if raw.get("stroke_etiology_la_atherosclerosis") is True:
-        return StrokeEtiology.by_id("Atherosclerosis")
-    if raw.get("stroke_etiology_lacunar") is True:
-        return StrokeEtiology.by_id("Lacunar")
-    if raw.get("stroke_etiology_cryptogenic_stroke") is True:
-        return StrokeEtiology.by_id("Cryptogenic Stroke")
-    if raw.get("stroke_etiology_other") is True:
-        return StrokeEtiology.by_id("Other")
+    mapping = {
+        "stroke_etiology_cardioembolism": StrokeEtiology.CARDIOEMBOLYSM,
+        "stroke_etiology_la_atherosclerosis": StrokeEtiology.ATHEROSCLEROSIS,
+        "stroke_etiology_lacunar": StrokeEtiology.LACUNAR,
+        "stroke_etiology_cryptogenic_stroke": StrokeEtiology.CRYPTOGENIC_STROKE,
+        "stroke_etiology_other": StrokeEtiology.OTHER,
+    }
+    for key, etiology in mapping.items():
+        value = raw.get(key)
+        if value is True:
+            return etiology
     return None
+
 
 def get_before_onset_medications(raw: dict):
     medications_taken = []
@@ -105,16 +107,16 @@ def get_before_onset_medications(raw: dict):
     medications_unknown = []
 
     mapping = {
-        "before_onset_antidiabetics": BeforeOnsetMedication.ANTIDIABETIC,
-        "before_onset_antihypertensives": BeforeOnsetMedication.ANTIHYPERTENSIVE,
-        "before_onset_any_anticoagulant": BeforeOnsetMedication.ANTICOAGULANT,
-        "before_onset_any_antiplatelet": BeforeOnsetMedication.ANTIPLATELET,
-        "before_onset_asa": BeforeOnsetMedication.ASA,
-        "before_onset_clopidogrel" : BeforeOnsetMedication.CLOPIDOGREL,
-        "before_onset_contraception": BeforeOnsetMedication.CONTRACEPTION,
-        "before_onset_other_anticoagulant": BeforeOnsetMedication.ANTICOAGULANT,
-        "before_onset_statin": BeforeOnsetMedication.STATIN,
-        "before_onset_warfarin": BeforeOnsetMedication.WARFARIN
+        "before_onset_antidiabetics": Medications.ANTIDIABETIC,
+        "before_onset_antihypertensives": Medications.ANTIHYPERTENSIVE,
+        "before_onset_any_anticoagulant": Medications.ANTICOAGULANT,
+        "before_onset_any_antiplatelet": Medications.ANTIPLATELET,
+        "before_onset_asa": Medications.ASA,
+        "before_onset_clopidogrel" : Medications.CLOPIDOGREL,
+        "before_onset_contraception": Medications.CONTRACEPTION,
+        "before_onset_other_anticoagulant": Medications.ANTICOAGULANT,
+        "before_onset_statin": Medications.STATIN,
+        "before_onset_warfarin": Medications.WARFARIN
         
     }
 
@@ -134,18 +136,18 @@ def get_on_discharge_medications(raw: dict):
     medications_prescribed = []
 
     mapping = {
-        "discharge_antidiabetics": DischargeMedication.ANTIDIABETIC,
-        "discharge_antihypertensives": DischargeMedication.ANTIHYPERTENSIVE,
-        "discharge_any_anticoagulant": DischargeMedication.ANTICOAGULANT,
-        "discharge_any_antiplatelet": DischargeMedication.ANTIPLATELET,
-        "discharge_other_antiplatelet": DischargeMedication.OTHER_ANTIPLATELET,
-        "discharge_herparin": DischargeMedication.HEPARIN,
-        "discharge_asa": DischargeMedication.ASPIRIN,
-        "discharge_clopidogrel": DischargeMedication.CLOPIDOGREL,
-        "discharge_contraception": DischargeMedication.CONTRACEPTION,
-        "discharge_other": DischargeMedication.OTHER,
-        "discharge_statin": DischargeMedication.STATIN,
-        "discharge_warfarin": DischargeMedication.WARFARIN
+        "discharge_antidiabetics": Medications.ANTIDIABETIC,
+        "discharge_antihypertensives": Medications.ANTIHYPERTENSIVE,
+        "discharge_any_anticoagulant": Medications.ANTICOAGULANT,
+        "discharge_any_antiplatelet": Medications.ANTIPLATELET,
+        "discharge_other_antiplatelet": Medications.OTHER_ANTIPLATELET,
+        "discharge_herparin": Medications.HEPARIN,
+        "discharge_asa": Medications.ASA,
+        "discharge_clopidogrel": Medications.CLOPIDOGREL,
+        "discharge_contraception": Medications.CONTRACEPTION,
+        "discharge_other": Medications.OTHER,
+        "discharge_statin": Medications.STATIN,
+        "discharge_warfarin": Medications.WARFARIN
 
     }
 
@@ -158,12 +160,15 @@ def get_on_discharge_medications(raw: dict):
 
 
 def get_bleeding_reason(raw: dict):
-    if raw.get("bleeding_reason_aneurysm") is True:
-        return BleedingReason.by_id("Aneurysm")
-    if raw.get("bleeding_reason_malformation") is True:
-        return BleedingReason.by_id("Malformation")
-    if raw.get("bleeding_reason_other") is True:
-        return BleedingReason.by_id("Other")
+
+    mapping = {
+        "bleeding_reason_aneurysm": BleedingReason.ANEURYSM,
+        "bleeding_reason_malformation": BleedingReason.MALFORMATION,
+        "bleeding_reason_other": BleedingReason.OTHER,
+    }
+    for key, reason in mapping.items():
+        if raw.get(key) is True:
+            return reason
     return None
 
 def get_risk_factors(raw: dict):
@@ -184,9 +189,6 @@ def get_risk_factors(raw: dict):
 
     for key, med in mapping.items():
         value = raw.get(key)
-        print(key)
-        print(raw.get(key))
-        print()
         if value is True:
             if med.id == "PreviousIschemicStroke" or med.id == "PreviousHemorraghicStroke" or med.id == "PreviousStroke":
                 risk_factor_remission.append(med)
@@ -263,6 +265,7 @@ def build_stroke_diagnosis_condition_profile(raw: dict, patient_ref: str, encoun
             valueCodeableConcept=CodeableConcept(coding=[Coding(system=bleeding_reason.system, code=bleeding_reason.code, display=bleeding_reason.display)])
         ))
 
+    
     # onset date/time (optional, but defensive)
     if not safe_isna(raw.get('onset_date')):
         extension_list.append(Extension(url="http://testSK.org/StructureDefinition/onset-date-ext",
@@ -920,9 +923,10 @@ def build_stroke_encounter_profile(raw: dict, patient_ref : str) -> Encounter:
         extension_list.append(Extension(url ="http://testSK.org/StructureDefinition/initial-care-intensity-ext",valueCodeableConcept = extensionCode))
     
     if raw.get("first_hospital"):
-        
         extension_list.append(Extension(url = "http://testSK.org/StructureDefinition/first-hospital-ext", valueBoolean = True))
-    
+    else:
+        extension_list.append(Extension(url = "http://testSK.org/StructureDefinition/first-hospital-ext", valueBoolean = False))
+
     if not pd.isna(raw.get("discharge_facility_department_id")):
         discharge_facility_department = DischargeFacilityDepartment.by_id(str(raw.get("discharge_facility_department_id")))
         
@@ -1065,7 +1069,6 @@ def build_before_onset_medicationRequest_profile(raw: dict, patient_ref : str, e
     )
     category_code = CodeableConcept(coding=[category_coding])
 
-
     for odm in on_discharge_meds:
             coding_bom = Coding(
                 system = odm.system,
@@ -1170,8 +1173,6 @@ def transform_to_fhir(raw: dict) -> Bundle:
         entries.append({"fullUrl": get_uuid(), "resource": nihss_adm, "request": BundleEntryRequest(method="POST", url="Observation")})
 
     # 8. Observation: Mtici Score (if exists)
-    print("MTICI SCORE:")
-    print(raw.get("mtici_score_id"))
     if not safe_isna(raw.get("mtici_score_id")):
         observation_mtici_score = build_observation_mtici_score(raw, patient_ref, encounter_ref)
         entries.append({"fullUrl": get_uuid(), "resource": observation_mtici_score, "request": BundleEntryRequest(method="POST", url="Observation")})
