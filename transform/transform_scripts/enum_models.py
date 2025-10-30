@@ -123,7 +123,7 @@ class Medications(ConceptEnum):
     
     ANTIHYPERTENSIVE = ("Antihypertensive", {"code": "372586001", "display": "Hypotensive agent (substance)", "system": "http://snomed.info/sct"})
     ANTICOAGULANT = ("Anticoagulant", {"code": "372862008", "display": "Anticoagulant (substance)", "system": "http://snomed.info/sct"})
-    CONTRACEPTION = ("Contraception", {"code": "1237404009", "display": "Uses hormone method of contraception (finding)", "system": "http://snomed.info/sct"})
+    CONTRACEPTION = ("Contraception", {"code": "312263009", "display": "Sex hormone (substance)", "system": "http://snomed.info/sct"})
     STATIN = ("Statin", {"code": "372912004", "display": "Substance with 3-hydroxy-3-methylglutaryl-coenzyme A reductase inhibitor mechanism of action (substance)", "system": "http://snomed.info/sct"})
     WARFARIN = ("Warfarin", {"code": "372756006", "display": "Warfarin (substance)", "system": "http://snomed.info/sct"})
     ASA = ("ASA", {"code": "387458008", "display": "Aspirin (substance)", "system": "http://snomed.info/sct"})
