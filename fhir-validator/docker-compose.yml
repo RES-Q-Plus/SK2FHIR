@@ -57,7 +57,7 @@ services:
     environment:
       APP_FHIR_SNOWSTORM_BASEURL: "http://snowstorm:8080/fhir"
       APP_FHIR_TXBASEURL: "https://tx.fhir.org/r5"
-      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.0.2.tgz"
+      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.1.0.tgz"
     networks:
       sknet:
         aliases: [validator]

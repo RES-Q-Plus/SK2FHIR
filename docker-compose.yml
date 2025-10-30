@@ -63,7 +63,7 @@ services:
       # Fallback terminológico (no SNOMED)
       APP_FHIR_TXBASEURL: "https://tx.fhir.org/r5"
       # IGs incluidos en el jar (ajusta si cambia la ruta/paquete)
-      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.0.2.tgz"
+      APP_FHIR_IGCLASSPATHPACKAGES: "classpath:/ig/SKtestIG-4.1.0.tgz"
     networks:
       sknet:
         aliases: [validator]
