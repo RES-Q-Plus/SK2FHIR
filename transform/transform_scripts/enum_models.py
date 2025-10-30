@@ -180,10 +180,10 @@ class DischargeDestination(ConceptEnum):
     DEAD = ("Dead", {"code": "dead", "display": "Patient Deceased", "system": "http://testSK.org/CodeSystem/stroke-discharge-destination-cs"})
 
 class DischargeFacilityDepartment(ConceptEnum):
-    ACUTE_REHABILITATION = ("Acute Rehabilitation", {"code": "acute", "display": "Acute Rehabilitation", "system": "http://testSK.org/CodeSystem/CodeSystem/discharge-dept-cs"})
-    POSTCARE_BED = ("Postcare Bed", {"code": "post-care", "display": "Post Care Bed", "system": "http://testSK.org/CodeSystem/CodeSystem/discharge-dept-cs"})
-    NEUROLOGY = ("Neurology", {"code": "neurology", "display": "Neurology", "system": "http://testSK.org/CodeSystem/CodeSystem/discharge-dept-cs"})
-    ANOTHER_DEPARTMENT = ("Another Department", {"code": "another-department", "display": "Another Department", "system": "http://testSK.org/CodeSystem/CodeSystem/discharge-dept-cs"})
+    ACUTE_REHABILITATION = ("Acute Rehabilitation", {"code": "acute", "display": "Acute Rehabilitation", "system": "http://testSK.org/CodeSystem/discharge-dept-cs"})
+    POSTCARE_BED = ("Postcare Bed", {"code": "post-care", "display": "Post Care Bed", "system": "http://testSK.org/CodeSystem/discharge-dept-cs"})
+    NEUROLOGY = ("Neurology", {"code": "neurology", "display": "Neurology", "system": "http://testSK.org/CodeSystem/discharge-dept-cs"})
+    ANOTHER_DEPARTMENT = ("Another Department", {"code": "another-department", "display": "Another Department", "system": "http://testSK.org/CodeSystem/discharge-dept-cs"})
 
 
 class MTiciScore(ConceptEnum):

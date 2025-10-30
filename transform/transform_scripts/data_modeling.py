@@ -141,7 +141,7 @@ def get_on_discharge_medications(raw: dict):
         "discharge_any_anticoagulant": Medications.ANTICOAGULANT,
         "discharge_any_antiplatelet": Medications.ANTIPLATELET,
         "discharge_other_antiplatelet": Medications.OTHER_ANTIPLATELET,
-        "discharge_herparin": Medications.HEPARIN,
+        "discharge_heparin": Medications.HEPARIN,
         "discharge_asa": Medications.ASA,
         "discharge_clopidogrel": Medications.CLOPIDOGREL,
         "discharge_contraception": Medications.CONTRACEPTION,
@@ -634,6 +634,8 @@ def build_observation_smoking(raw: dict, patient_ref: str, encounter_ref: str) -
     )
 
 def build_stroke_circumstance_observation(patient_ref : str, encounter_ref : str, condition_ref : str, wake_up = False, in_hosp = False) -> Observation:
+    print("Building Stroke Circumstance Observation")
+    print(f"wake_up: {wake_up}, in_hosp: {in_hosp}")
     if wake_up:
         circumstance = StrokeCircumstance.WAKE_UP
     elif in_hosp:
@@ -652,7 +654,7 @@ def build_stroke_circumstance_observation(patient_ref : str, encounter_ref : str
         meta={"profile":["http://testSK.org/StructureDefinition/stroke-circumstance-observation-profile"]},
         code=code_circumstance,
         encounter=Reference(reference=encounter_ref),
-        focus=[Reference(reference=condition_ref)]
+        #focus=[Reference(reference=condition_ref)]
     )
 
 
@@ -1189,18 +1191,25 @@ def transform_to_fhir(raw: dict) -> Bundle:
         obs = build_observation_smoking(raw, patient_ref, encounter_ref)
         entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
-
-    if not safe_isna(raw.get("wake_up_stroke")):
+    print("---- Stroke Circumstance Observations ----")
+    print("---- Wake up stroke ----")
+    print(raw.get("wakeup_stroke"))
+    if not safe_isna(raw.get("wakeup_stroke")) and raw.get("wakeup_stroke"):
+        print("Building wake up stroke observation")
         ensure_dependency(condition_stroke_ref is not None,
                           need="Stroke Condition",
-                          because="wake_up_stroke=true needs a Condition to reference")
+                          because="wakeup_stroke=true needs a Condition to reference")
         obs = build_stroke_circumstance_observation(patient_ref, encounter_ref, condition_stroke_ref, wake_up=True)
+        print(obs)
         entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
-    if not safe_isna(raw.get("in_hospital_stroke")):
+    print("---- In hospital stroke ----")
+    print(raw.get("inhospital_stroke"))
+    if not safe_isna(raw.get("inhospital_stroke")) and raw.get("inhospital_stroke"):
+        print("Building in hospital stroke observation")
         ensure_dependency(condition_stroke_ref is not None,
                           need="Stroke Condition",
-                          because="in_hospital_stroke=true needs a Condition to reference")
+                          because="inhospital_stroke=true needs a Condition to reference")
         obs = build_stroke_circumstance_observation(patient_ref, encounter_ref, condition_stroke_ref, in_hosp=True)
         entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
@@ -1210,7 +1219,7 @@ def transform_to_fhir(raw: dict) -> Bundle:
         entries.append({"fullUrl": get_uuid(), "resource": proc_img, "request": BundleEntryRequest(method="POST", url="Procedure")})
 
     # Thrombolysis
-    if raw.get("thrombolisys") or not safe_isna(raw.get("no_thrombolisys_reason_id")):
+    if raw.get("thrombolysis") or not safe_isna(raw.get("no_thrombolisys_reason_id")):
         proc_thrombolysis_ref = get_uuid()
         proc_thrombolysis = build_thrombolysis_procedure(raw, patient_ref, encounter_ref)
         entries.append({"fullUrl": proc_thrombolysis_ref, "resource": proc_thrombolysis, "request": BundleEntryRequest(method="POST", url="Procedure")})
