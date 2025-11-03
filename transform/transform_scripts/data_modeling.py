@@ -634,8 +634,6 @@ def build_observation_smoking(raw: dict, patient_ref: str, encounter_ref: str) -
     )
 
 def build_stroke_circumstance_observation(patient_ref : str, encounter_ref : str, condition_ref : str, wake_up = False, in_hosp = False) -> Observation:
-    print("Building Stroke Circumstance Observation")
-    print(f"wake_up: {wake_up}, in_hosp: {in_hosp}")
     if wake_up:
         circumstance = StrokeCircumstance.WAKE_UP
     elif in_hosp:
@@ -783,13 +781,11 @@ def build_thrombolysis_procedure(raw: dict, patient_ref : str, encounter_ref : s
     if len(extension_list) > 0:
         procedure.extension = extension_list
     
-    if raw.get("thrombolysis"):
-        bolus_timestamp = raw.get("bolus_timestamp")
-        if bolus_timestamp is not None:
-            bolus_timestamp = parse_datetime(str(bolus_timestamp))
-            procedure.occurrencePeriod=Period(start=bolus_timestamp)
+    if safe_isna(raw.get("thrombolysis")) and safe_isna(raw.get("no_thrombolysis_reason_id")):
+        procedure.status = "unknown"
         return procedure
-    else:
+
+    elif (safe_isna(raw.get("thrombolysis")) or not(raw.get("thrombolysis")) and not safe_isna(raw.get("no_thrombolysis_reason_id"))):
         no_thrombolysis_reason = ProcedureNotDoneReason.by_id(str(raw.get("no_thrombolysis_reason_id")))
         coding_reason = Coding(
             code = no_thrombolysis_reason.code,
@@ -800,7 +796,24 @@ def build_thrombolysis_procedure(raw: dict, patient_ref : str, encounter_ref : s
         procedure.status = "not-done"
         procedure.statusReason = code_reason
         return procedure
-
+    elif (safe_isna(raw.get("thrombolysis")) or not(raw.get("thrombolysis")) and safe_isna(raw.get("no_thrombolysis_reason_id"))):
+        no_thrombolysis_reason = ProcedureNotDoneReason.UNKNOWN
+        coding_reason = Coding(
+            code = no_thrombolysis_reason.code,
+            system = no_thrombolysis_reason.system,
+            display = no_thrombolysis_reason.display
+        )
+        code_reason = CodeableConcept(coding=[coding_reason])
+        procedure.status = "not-done"
+        procedure.statusReason = code_reason
+        return procedure
+    else:
+        bolus_timestamp = raw.get("bolus_timestamp")
+        if bolus_timestamp is not None:
+            bolus_timestamp = parse_datetime(str(bolus_timestamp))
+            procedure.occurrencePeriod=Period(start=bolus_timestamp)
+        return procedure
+    
 def build_thrombectomy_procedure(raw: dict, patient_ref : str, encounter_ref : str, condition_ref : str) -> Procedure:
     procedure = Procedure(status= "not-done", subject=Reference(reference=patient_ref), encounter=Reference(reference=encounter_ref))
     procedure.meta = {"profile": ["http://testSK.org/StructureDefinition/stroke-mechanical-procedure-profile"]}
@@ -828,7 +841,36 @@ def build_thrombectomy_procedure(raw: dict, patient_ref : str, encounter_ref : s
     if len(extension_list) > 0:
         procedure.extension = extension_list
 
-    if raw.get("thrombectomy"):
+    if safe_isna(raw.get("thrombectomy")) and safe_isna(raw.get("no_thrombectomy_reason_id")):
+        procedure.status = "unknown"
+        return procedure
+    elif (safe_isna(raw.get("thrombectomy")) or not(raw.get("thrombectomy"))) and not safe_isna(raw.get("no_thrombectomy_reason_id")):
+        print(safe_isna(raw.get("thrombectomy")))
+        print("Building thrombectomy procedure - not done with reason")
+        print(f"no_thrombectomy_reason_id: {raw.get('no_thrombectomy_reason_id')}")
+        no_thrombectomy_reason = ProcedureNotDoneReason.by_id(str(raw.get("no_thrombectomy_reason_id")))
+        print(f"no_thrombectomy_reason: {no_thrombectomy_reason}")
+        coding_reason = Coding(
+            code = no_thrombectomy_reason.code,
+            system = no_thrombectomy_reason.system,
+            display = no_thrombectomy_reason.display
+        )
+        code_reason = CodeableConcept(coding=[coding_reason])
+        procedure.status = "not-done"
+        procedure.statusReason = code_reason
+        return procedure
+    elif (safe_isna(raw.get("thrombectomy")) or not(raw.get("thrombectomy"))) and safe_isna(raw.get("no_thrombectomy_reason_id")):
+        no_thrombectomy_reason = ProcedureNotDoneReason.UNKNOWN
+        coding_reason = Coding(
+            code = no_thrombectomy_reason.code,
+            system = no_thrombectomy_reason.system,
+            display = no_thrombectomy_reason.display
+        )
+        code_reason = CodeableConcept(coding=[coding_reason])
+        procedure.status = "not-done"
+        procedure.statusReason = code_reason
+        return procedure
+    else:
         procedure.status = "completed"  
         puncture_timestamp = raw.get("puncture_timestamp")
         reperfusion_timestamp = raw.get("reperfusion_timestamp")
@@ -837,7 +879,7 @@ def build_thrombectomy_procedure(raw: dict, patient_ref : str, encounter_ref : s
             reperfusion_timestamp = parse_datetime(str(reperfusion_timestamp))
             procedure.occurrencePeriod = Period(start=puncture_timestamp, end=reperfusion_timestamp)
 
-    if not pd.isna(raw.get("mt_complications_perforation")):
+    if not safe_isna(raw.get("mt_complications_perforation")):
         perforation = ThrombectomyComplications.PERFORATION
         coding_perforation = Coding(
             code = perforation.code,
@@ -847,17 +889,6 @@ def build_thrombectomy_procedure(raw: dict, patient_ref : str, encounter_ref : s
         code_perforation = CodeableConcept(coding=[coding_perforation])
         code_ref_perforation = CodeableReference(concept=code_perforation, reference=Reference(reference=condition_ref))
         procedure.complication = [code_ref_perforation]
-        return procedure
-    else:
-        no_thrombectomy_reason = ProcedureNotDoneReason.by_id(str(raw.get("no_thrombectomy_reason_id")))
-        coding_reason = Coding(
-            code = no_thrombectomy_reason.code,
-            system = no_thrombectomy_reason.system,
-            display = no_thrombectomy_reason.display
-        )
-        code_reason = CodeableConcept(coding=[coding_reason])
-
-        procedure.statusReason = code_reason
         return procedure
 
 def build_stroke_encounter_profile(raw: dict, patient_ref : str) -> Encounter:
@@ -1191,22 +1222,15 @@ def transform_to_fhir(raw: dict) -> Bundle:
         obs = build_observation_smoking(raw, patient_ref, encounter_ref)
         entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
-    print("---- Stroke Circumstance Observations ----")
-    print("---- Wake up stroke ----")
-    print(raw.get("wakeup_stroke"))
+
     if not safe_isna(raw.get("wakeup_stroke")) and raw.get("wakeup_stroke"):
-        print("Building wake up stroke observation")
         ensure_dependency(condition_stroke_ref is not None,
                           need="Stroke Condition",
                           because="wakeup_stroke=true needs a Condition to reference")
         obs = build_stroke_circumstance_observation(patient_ref, encounter_ref, condition_stroke_ref, wake_up=True)
-        print(obs)
         entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
-    print("---- In hospital stroke ----")
-    print(raw.get("inhospital_stroke"))
     if not safe_isna(raw.get("inhospital_stroke")) and raw.get("inhospital_stroke"):
-        print("Building in hospital stroke observation")
         ensure_dependency(condition_stroke_ref is not None,
                           need="Stroke Condition",
                           because="inhospital_stroke=true needs a Condition to reference")
@@ -1219,25 +1243,24 @@ def transform_to_fhir(raw: dict) -> Bundle:
         entries.append({"fullUrl": get_uuid(), "resource": proc_img, "request": BundleEntryRequest(method="POST", url="Procedure")})
 
     # Thrombolysis
-    if raw.get("thrombolysis") or not safe_isna(raw.get("no_thrombolisys_reason_id")):
-        proc_thrombolysis_ref = get_uuid()
-        proc_thrombolysis = build_thrombolysis_procedure(raw, patient_ref, encounter_ref)
-        entries.append({"fullUrl": proc_thrombolysis_ref, "resource": proc_thrombolysis, "request": BundleEntryRequest(method="POST", url="Procedure")})
-        if not safe_isna(raw.get("door_to_needle")):
-            obs = build_timing_specific_observation(raw, patient_ref, encounter_ref, proc_thrombolysis_ref, thrombolisys=True)
-            entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
+    proc_thrombolysis_ref = get_uuid()
+    proc_thrombolysis = build_thrombolysis_procedure(raw, patient_ref, encounter_ref)
+    entries.append({"fullUrl": proc_thrombolysis_ref, "resource": proc_thrombolysis, "request": BundleEntryRequest(method="POST", url="Procedure")})
+    if not safe_isna(raw.get("door_to_needle")):
+        obs = build_timing_specific_observation(raw, patient_ref, encounter_ref, proc_thrombolysis_ref, thrombolisys=True)
+        entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
     # Thrombectomy (requires Stroke Condition ref for complications link)
-    if raw.get("thrombectomy") or not safe_isna(raw.get("no_thrombectomy_reason_id")):
-        ensure_dependency(condition_stroke_ref is not None,
+    
+    ensure_dependency(condition_stroke_ref is not None,
                           need="Stroke Condition",
                           because="thrombectomy/complications need to reference the Condition")
-        proc_thrombectomy_ref = get_uuid()
-        proc_thrombectomy = build_thrombectomy_procedure(raw, patient_ref, encounter_ref, condition_stroke_ref)
-        entries.append({"fullUrl": proc_thrombectomy_ref, "resource": proc_thrombectomy, "request": BundleEntryRequest(method="POST", url="Procedure")})
-        if not safe_isna(raw.get("door_to_groin")):
-            obs = build_timing_specific_observation(raw, patient_ref, encounter_ref, proc_thrombectomy_ref, thrombectomy=True)
-            entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
+    proc_thrombectomy_ref = get_uuid()
+    proc_thrombectomy = build_thrombectomy_procedure(raw, patient_ref, encounter_ref, condition_stroke_ref)
+    entries.append({"fullUrl": proc_thrombectomy_ref, "resource": proc_thrombectomy, "request": BundleEntryRequest(method="POST", url="Procedure")})
+    if not safe_isna(raw.get("door_to_groin")):
+        obs = build_timing_specific_observation(raw, patient_ref, encounter_ref, proc_thrombectomy_ref, thrombectomy=True)
+        entries.append({"fullUrl": get_uuid(), "resource": obs, "request": BundleEntryRequest(method="POST", url="Observation")})
 
     if not safe_isna(raw.get("swallowing_screening_type_id")):
         proc_swallowing = build_swallowing_screening_procedure(raw, patient_ref, encounter_ref)
@@ -1256,7 +1279,7 @@ def transform_to_fhir(raw: dict) -> Bundle:
     for med_request in build_before_onset_medicationRequest_profile(raw, patient_ref, encounter_ref):
         entries.append({"fullUrl": get_uuid(), "resource": med_request, "request": BundleEntryRequest(method="POST", url="MedicationRequest")})
 
-
+    print("--------------------------------------")
     bundle_final = Bundle(type="transaction")
     bundle_final.entry = entries
     return bundle_final

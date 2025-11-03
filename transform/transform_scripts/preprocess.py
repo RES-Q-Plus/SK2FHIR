@@ -26,7 +26,11 @@ def transformation(input_dataframe):
     df = minute_difference(df, shm.door_to_groin, shm.puncture_timestamp, shm.hospital_timestamp)
 
     df = cast_types(df, 'int', int_columns)
-
+    df = mapping(df, source_col= shm.thrombolysis, target_col=shm.no_thrombolysis_reason, lookup=maps.no_thrombolysis_reason_map)
+    df = mapping(df, source_col= shm.thrombectomy, target_col=shm.no_thrombectomy_reason, lookup=maps.no_thrombectomy_reason_map)
+    df = cetl.no_thrombolysis_reason(df)
+    df = cetl.no_thrombectomy_reason(df)
+    
     for column in str_to_bool_columns:
         df = mapping(df, column, maps.bool_map)
 
@@ -45,10 +49,10 @@ def transformation(input_dataframe):
     df = mapping(df, shm.sex, maps.sex_map)
     df = mapping(df, shm.arrival_mode, maps.arrival_mode_map)
     df = mapping(df, source_col= shm.imaging_type, target_col=shm.imaging_done, lookup=maps.imaging_done_map)
-
+    
     df = mapping(df, shm.stroke_type, maps.stroke_type_map)
-    df = mapping(df, shm.no_thrombolysis_reason, maps.no_thrombolysis_reason_map)
-    df = mapping(df, shm.no_thrombectomy_reason, maps.no_thrombectomy_reason_map)
+    #df = mapping(df, shm.no_thrombolysis_reason, maps.no_thrombolysis_reason_map)
+    #df = mapping(df, shm.no_thrombectomy_reason, maps.no_thrombectomy_reason_map)
     df = mapping(df, shm.swallowing_screening_done, maps.swallowing_screening_done_map)
     df = mapping(df, shm.swallowing_screening_type, maps.swallowing_screening_type_map)
     df = mapping(df, shm.swallowing_screening_timing, maps.swallowing_screening_timing_map)
@@ -71,8 +75,7 @@ def transformation(input_dataframe):
     df = cetl.transform_before_onset_anticoagulants(df)
     df = cetl.transform_bleeding_reason(df)
     df = cetl.transform_etiology(df)
-    df = cetl.no_thrombolysis_reason(df)
-    df = cetl.no_thrombectomy_reason(df)
+
     df = cetl.imaging_types(df)
     df = cetl.reperfusion_timestamp(df)
     df = cetl.transformation_post_acute_care(df)

@@ -56,7 +56,8 @@ def process_mrs(dataframe, mrs_column: str):
 
 def no_thrombolysis_reason(dataframe):
     # mapping function transform column values based on the mapping dictionary
-    dataframe = mapping(dataframe, shm.no_thrombolysis_reason, no_thrombolysis_reason_map)
+    dataframe = mapping(dataframe, source_col= shm.thrombolysis, target_col=shm.no_thrombolysis_reason, lookup=no_thrombolysis_reason_map)
+    print(dataframe.select(col(shm.no_thrombolysis_reason)).show())
     return dataframe.withColumn(
         shm.no_thrombolysis_reason,
         when(col("no_ivt_reason_time_window") == '1', ProcedureNotDoneReason.TIME_WINDOW.id)
@@ -66,7 +67,7 @@ def no_thrombolysis_reason(dataframe):
 
 def no_thrombectomy_reason(dataframe):
     # mapping function transform column values based on the mapping dictionary
-    dataframe = mapping(dataframe, shm.no_thrombectomy_reason, no_thrombectomy_reason_map)
+    dataframe = mapping(dataframe, source_col= shm.thrombectomy, target_col=shm.no_thrombectomy_reason, lookup=no_thrombectomy_reason_map)
     return dataframe.withColumn(
         shm.no_thrombectomy_reason,
         when(col("no_mt_reason_time_window") == '1', ProcedureNotDoneReason.TIME_WINDOW.id)
